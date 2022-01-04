@@ -7,7 +7,7 @@ const App = () => (
  
 
     <View style={styles.container}>
-      <Home />
+      <Home></Home>
     </View>
   );
 
