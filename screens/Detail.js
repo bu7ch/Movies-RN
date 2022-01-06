@@ -1,94 +1,150 @@
 import React, { useState, useEffect } from "react";
-import { Image, ScrollView, Text, StyleSheet, View, Dimensions } from "react-native";
-import { getMovie } from "../services/services";
-import StarRating from "react-native-star-rating"; 
-import dateFormat from 'dateformat'
-const placeholder = require("../assets/placeholder.png");
+import {
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  View,
+  Modal,
+  Pressable,
+} from "react-native";
 
+import PlayButton from "../components/PlayButton";
+import { getMovie } from "../services/services";
+import Video from "../components/Video";
+import StarRating from "react-native-star-rating";
+import dateFormat from "dateformat";
+
+const placeholderImage = require("../assets/placeholder.png");
 const height = Dimensions.get("screen").height;
+
 const Detail = ({ route, navigation }) => {
-  const [movieDetail, setmovieDetail] = useState();
-  const [loaded, setLoaded] = useState(false);
   const movieId = route.params.movieDetail.id;
+
+  const [movieDetail, setDetail] = useState();
+  const [loaded, setLoaded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     getMovie(movieId).then((movieData) => {
-      setmovieDetail(movieData);
+      setDetail(movieData);
       setLoaded(true);
     });
   }, [movieId]);
+
+  const videoShown = () => {
+    setModalVisible(!modalVisible);
+  };
+
   return (
-    <>
+    <React.Fragment>
       {loaded && (
-        <ScrollView>
-          <Image
-            resizeMode="cover"
-            style={styles.image}
-            source={
-              movieDetail.poster_path
-                ? {
-                    uri:
-                      "https://image.tmdb.org/t/p/w500" +
-                      movieDetail.poster_path,
-                  }
-                : placeholder
-            }
-          />
-          <View style={styles.container}>
-            <Text style={styles.movieTitle}>{movieDetail.title}</Text>
-            {movieDetail.genres && ( 
-              <View style={styles.genresContainer}>
-                {movieDetail.genres.map((genre) => {
-                  return (
-                    <Text style={styles.genre} key={genre.id}>{genre.name}</Text>
-                  )
-                })}
+        <View>
+          <ScrollView>
+            <Image
+              resizeMode="cover"
+              style={styles.image}
+              source={
+                movieDetail.poster_path
+                  ? {
+                      uri:
+                        "https://image.tmdb.org/t/p/w500" +
+                        movieDetail.poster_path,
+                    }
+                  : placeholderImage
+              }
+            />
+            <View style={styles.container}>
+              <View style={styles.playButton}>
+                <PlayButton handlePress={videoShown} />
+              </View>
+              <Text style={styles.movieTitle}>{movieDetail.title}</Text>
+              {movieDetail.genres && (
+                <View style={styles.genresContainer}>
+                  {movieDetail.genres.map((genre) => {
+                    return (
+                      <Text style={styles.genre} key={genre.id}>
+                        {genre.name}
+                      </Text>
+                    );
+                  })}
                 </View>
-            )}
-            <StarRating 
-            disabled={true}
-            maxStars={5}
-            starSize={30}
-            rating={movieDetail.vote_average /2}
-            fullStarColor={"gold"}/>
-            <Text style={styles.overview}> {movieDetail.overview}</Text>
-            <Text style={styles.release}> {"Date de sortie : " + dateFormat(movieDetail.release_date, "dS mmmm, yyyy")}</Text>
-          </View>
-        </ScrollView>
+              )}
+              <StarRating
+                disabled={true}
+                maxStars={5}
+                starSize={30}
+                rating={movieDetail.vote_average / 2}
+                fullStarColor={"gold"}
+              />
+              <Text style={styles.overview}>{movieDetail.overview}</Text>
+              <Text style={styles.release}>
+                {"Date de sortie :" +
+                  dateFormat(movieDetail.release_date, "dS mmmm, yyyy")}
+              </Text>
+            </View>
+          </ScrollView>
+          <Modal
+            supportedOrientations={["portrait", "landscape"]}
+            animationType="slide"
+            visible={modalVisible}
+          >
+            <View style={styles.videoModal}>
+              <Video
+              onClose={videoShown}
+                />
+            </View>
+          </Modal>
+        </View>
       )}
-    </>
+      {!loaded && <ActivityIndicator size="large" />}
+    </React.Fragment>
   );
 };
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   image: {
     height: height / 2.5,
   },
-  container: { 
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   movieTitle: {
     fontSize: 24,
-    fontWeight:'bold',
-    marginTop:10,
-    marginBottom:10
+    fontWeight: "bold",
+    marginTop: 10,
+    marginBottom: 10,
   },
-  genresContainer:{
-    flexDirection:"row",
+  genresContainer: {
+    flexDirection: "row",
     alignContent: "center",
-    marginTop:20,
-    marginBottom:20
+    marginTop: 20,
+    marginBottom: 20,
   },
   genre: {
-    marginRight:10,
-    fontWeight:'bold'
-  }, overview: {
-    padding:15,
+    marginRight: 10,
+    fontWeight: "bold",
   },
-  release:{
-    fontWeight: "bold"
-  }
+  overview: {
+    padding: 15,
+  },
+  release: {
+    fontWeight: "bold",
+  },
+  playButton: {
+    position: "absolute",
+    top: -25,
+    right: 20,
+  },
+  videoModal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 export default Detail;
