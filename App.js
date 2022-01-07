@@ -1,17 +1,11 @@
-import React from "react";
-import Home from "./screens/Home";
+import React from 'react';
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Detail from "./screens/Detail";
-
-const Stack = createNativeStackNavigator();
+import MainNavigation from "./components/MainNavigation";
+import "react-native-gesture-handler"
 
 const App = () => (
   <NavigationContainer>
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="Detail" component={Detail} />
-    </Stack.Navigator>
+    <MainNavigation />
   </NavigationContainer>
 );
 
